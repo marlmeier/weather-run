@@ -296,6 +296,7 @@ export default function App() {
             padding: '6px 0 4px', width: '100%',
           }}>
             <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: .2 }}>{state.locationLabel}</div>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,.55)', marginTop: 1 }}>{state.locationSub}</div>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', gap: 6, marginTop: 2 }}>
               <div style={{ fontSize: 56, fontWeight: 300, lineHeight: 1 }}>{wm.temp}</div>
               <div style={{ marginTop: 10 }}><WeatherIcon weather={weather} size={28} /></div>
@@ -311,9 +312,7 @@ export default function App() {
               <span style={lab}>Your route</span>
               <span style={{ fontSize: 13, color: 'rgba(255,255,255,.85)', fontWeight: 700 }}>{adj.distanceKm} km · {state.route.durationMin} min</span>
             </div>
-            <div style={{ borderRadius: 14, overflow: 'hidden', background: 'rgba(255,255,255,.07)' }}>
-              <RouteMap state={state} height={108} mods={mods} />
-            </div>
+            <RouteMap state={state} height={210} mods={mods} />
             <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
               {[['Distance', adj.distanceKm + ' km'], ['Ascent', adj.elevationM + ' m'], ['Max grade', adj.maxGrade + '%']].map(([label, val], i) => (
                 <div key={i} style={{ flex: 1, textAlign: 'center', padding: '8px 4px',

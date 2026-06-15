@@ -10,26 +10,28 @@ const SONGS = [
 
 const TEMPLATES = {
   city: {
+    // Embarcadero Loop, San Francisco
     sunny: { dist: 5.2, elev: 14, surface: 'Paved', diff: 'Easy', diffN: 2, effort: 3, pace: 5.5,
-      note: 'Clear & dry — full city loop unlocked.', warn: [],
-      segs: [['Flat street', 1], ['Gentle rise', 3], ['Riverside path', 1], ['Short climb', 4], ['Flat finish', 1]] },
+      note: 'Clear skies — full Embarcadero loop to Aquatic Park unlocked.', warn: [],
+      segs: [['Ferry Bldg → Pier 7', 1], ['Pier 17 rise', 3], ['Pier 39 stretch', 1], ['Wharf → Aquatic Park', 4], ['Columbus return', 1]] },
     rainy: { dist: 4.0, elev: 10, surface: 'Slick paved', diff: 'Moderate', diffN: 3, effort: 5, pace: 6.1,
-      note: 'Rain detected — shorter, sheltered reroute active.', warn: ['Underpass flooding avoided', 'Reduced 5.2 → 4.0 km'],
-      segs: [['Covered arcade', 1, 'w'], ['Gentle rise', 2], ['Riverside (muddy)', 1, 'w'], ['Underpass reroute', 2, 'w'], ['Flat finish', 1]] },
+      note: 'Rain off the Bay — sheltered arcade reroute active.', warn: ['Waterfront exposed — staying inland', 'Loop shortened 5.2 → 4.0 km'],
+      segs: [['Covered Ferry arcade', 1, 'w'], ['Pier 7 rise', 2], ['Sheltered mid-section', 1, 'w'], ['Taylor St reroute', 2, 'w'], ['Beach St finish', 1]] },
     windy: { dist: 5.0, elev: 14, surface: 'Paved', diff: 'Moderate', diffN: 3, effort: 4, pace: 5.8,
-      note: 'Gusts 28 km/h — headwind segments flagged.', warn: ['Embankment exposed to crosswind'],
-      segs: [['Flat street', 1, 'x'], ['Gentle rise', 3, 'x'], ['Exposed embankment', 2, 'x'], ['Short climb', 4], ['Flat finish', 1, 'x']] },
+      note: 'Bay gusts 28 km/h — exposed pier sections flagged.', warn: ['Embarcadero open to Bay crosswind'],
+      segs: [['Ferry Bldg → Pier 7', 1, 'x'], ['Pier 17 rise', 3, 'x'], ['Exposed piers', 2, 'x'], ['Pier 39 stretch', 4], ['Columbus return', 1, 'x']] },
   },
   trail: {
-    sunny: { dist: 4.6, elev: 80, surface: 'Rocky', diff: 'Hard', diffN: 4, effort: 7, pace: 7.4,
-      note: 'Dry rock — full 80 m summit line open.', warn: [],
-      segs: [['Forest approach', 5], ['Switchbacks', 9], ['Summit push', 13], ['Rocky descent', -7], ['Cooldown trail', 3]] },
-    rainy: { dist: 3.6, elev: 54, surface: 'Slick rock', diff: 'Severe', diffN: 5, effort: 8, pace: 8.3,
-      note: 'Rain on rock — summit scramble CLOSED, safe reroute.', warn: ['Summit scramble closed (wet rock)', 'Elevation cut 80 → 54 m'],
-      segs: [['Forest approach', 4, 'w'], ['Lower switchbacks', 7], ['Reroute traverse', 8, 'w'], ['Careful descent', -5, 'w'], ['Cooldown trail', 2]] },
-    windy: { dist: 4.4, elev: 80, surface: 'Rocky', diff: 'Hard', diffN: 4, effort: 8, pace: 7.8,
-      note: 'Ridge gusts — exposed summit needs extra effort.', warn: ['Summit ridge wind-exposed'],
-      segs: [['Forest approach', 5], ['Exposed switchbacks', 9, 'x'], ['Summit push (gusts)', 13, 'x'], ['Rocky descent', -7], ['Cooldown trail', 3, 'x']] },
+    // Tennessee Valley Trail, Marin Headlands
+    sunny: { dist: 4.6, elev: 80, surface: 'Packed dirt', diff: 'Hard', diffN: 4, effort: 7, pace: 7.4,
+      note: 'Dry trail — full ridge summit to Tennessee Beach open.', warn: [],
+      segs: [['Valley floor', 5], ['Lower switchbacks', 9], ['Summit push', 13], ['Ridge descent', -7], ['Beach flats', 3]] },
+    rainy: { dist: 3.6, elev: 54, surface: 'Muddy trail', diff: 'Severe', diffN: 5, effort: 8, pace: 8.3,
+      note: 'Rain on trail — upper ridge CLOSED, valley reroute active.', warn: ['Upper scramble closed (mud/slick)', 'Elevation cut 80 → 54 m'],
+      segs: [['Valley floor', 4, 'w'], ['Lower switchbacks', 7], ['Reroute traverse', 8, 'w'], ['Careful descent', -5, 'w'], ['Beach flats', 2]] },
+    windy: { dist: 4.4, elev: 80, surface: 'Packed dirt', diff: 'Hard', diffN: 4, effort: 8, pace: 7.8,
+      note: 'Ridge gusts — summit exposed, high effort required.', warn: ['Summit ridge wind-exposed'],
+      segs: [['Valley floor', 5], ['Exposed switchbacks', 9, 'x'], ['Summit push (gusts)', 13, 'x'], ['Ridge descent', -7], ['Beach flats', 3, 'x']] },
   },
 }
 
@@ -73,7 +75,8 @@ export function derive(weather, location) {
   const durationMin = Math.round(cfg.dist * cfg.pace)
   return {
     weather, location,
-    locationLabel: { city: 'City Streets', trail: 'Steep Rocky Trail' }[location],
+    locationLabel: location === 'city' ? 'Embarcadero Loop' : 'Tennessee Valley Trail',
+    locationSub:   location === 'city' ? 'San Francisco, CA' : 'Marin Headlands, CA',
     weatherNote: cfg.note,
     warnings: cfg.warn,
     route: { distanceKm: cfg.dist, elevationM: cfg.elev, surface: cfg.surface,
