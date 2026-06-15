@@ -4,16 +4,12 @@ import { derive, routeMods } from './engine.js'
 
 /* ─── Animated weather backgrounds ─── */
 const CSS_ANIM = `
-@keyframes wxRain { from { background-position-y: 0 } to { background-position-y: 21px } }
-@keyframes wxRain2 { from { background-position-y: 0 } to { background-position-y: 33px } }
 @keyframes wxDrift { from { background-position-x: 0 } to { background-position-x: 280px } }
 @keyframes wxFloat { from { transform: translateX(-26px) } to { transform: translateX(26px) } }
 @keyframes wxFloat2 { from { transform: translateX(20px) } to { transform: translateX(-20px) } }
 @keyframes wxSpin { to { transform: rotate(360deg) } }
 @keyframes wxPulse { 0%,100% { opacity: .75 } 50% { opacity: 1 } }
 @media (prefers-reduced-motion: no-preference) {
-  .wx-rain { animation: wxRain .6s linear infinite }
-  .wx-rain2 { animation: wxRain2 1s linear infinite }
   .wx-wind { animation: wxDrift 7s linear infinite }
   .wx-cloud { animation: wxFloat 16s ease-in-out infinite alternate }
   .wx-cloud2 { animation: wxFloat2 20s ease-in-out infinite alternate }
@@ -62,22 +58,87 @@ function SunnyBg() {
   )
 }
 
+/* ─── Canvas rain (realistic individual drops) ─── */
+function RainCanvas() {
+  const canvasRef = useRef(null)
+  const rafRef = useRef(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+
+    const setup = () => {
+      canvas.width  = canvas.offsetWidth
+      canvas.height = canvas.offsetHeight
+    }
+    setup()
+
+    // Three depth layers: far (fast/thin), mid, near (slow/thick)
+    const layers = [
+      { n: 90,  sMin: 9,  sMax: 16, lMin: 7,  lMax: 16, w: 0.55, oMin: 0.08, oMax: 0.18 },
+      { n: 55,  sMin: 6,  sMax: 10, lMin: 14, lMax: 24, w: 0.9,  oMin: 0.13, oMax: 0.26 },
+      { n: 28,  sMin: 3,  sMax: 6,  lMin: 22, lMax: 38, w: 1.4,  oMin: 0.18, oMax: 0.35 },
+    ]
+    const lean = 0.13 // slight diagonal
+
+    const drops = layers.flatMap(l =>
+      Array.from({ length: l.n }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        speed:  l.sMin + Math.random() * (l.sMax - l.sMin),
+        length: l.lMin + Math.random() * (l.lMax - l.lMin),
+        w: l.w,
+        o: l.oMin + Math.random() * (l.oMax - l.oMin),
+      }))
+    )
+
+    const draw = () => {
+      const W = canvas.width, H = canvas.height
+      ctx.clearRect(0, 0, W, H)
+      drops.forEach(d => {
+        ctx.beginPath()
+        ctx.moveTo(d.x, d.y)
+        ctx.lineTo(d.x + lean * d.length, d.y + d.length)
+        ctx.strokeStyle = `rgba(210,232,250,${d.o})`
+        ctx.lineWidth = d.w
+        ctx.lineCap = 'round'
+        ctx.stroke()
+        d.y += d.speed
+        d.x += lean * d.speed
+        if (d.y > H + 40) { d.y = -20; d.x = Math.random() * (W + 60) }
+      })
+      rafRef.current = requestAnimationFrame(draw)
+    }
+    draw()
+    return () => cancelAnimationFrame(rafRef.current)
+  }, [])
+
+  return (
+    <canvas ref={canvasRef}
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} />
+  )
+}
+
 function RainyBg() {
   return (
     <>
-      <Cloud top={-40} left={-34} width={200} opacity={0.55} blur={20} color="#34424f" />
-      <Cloud top={-22} left={130} width={190} opacity={0.5} blur={22} color="#2a3744" />
-      <Cloud top={30} left={60} width={160} opacity={0.35} blur={18} color="#2e3d4a" />
-      {/* Heavy rain streaks */}
-      <div className="wx-rain" style={{ position: 'absolute', inset: 0, pointerEvents: 'none',
-        backgroundImage: 'repeating-linear-gradient(101deg, transparent 0 7px, rgba(180,210,230,.28) 7px 8px)',
-        opacity: 0.65 }} />
-      <div className="wx-rain2" style={{ position: 'absolute', inset: 0, pointerEvents: 'none',
-        backgroundImage: 'repeating-linear-gradient(101deg, transparent 0 12px, rgba(200,225,240,.16) 12px 13px)',
-        opacity: 0.7 }} />
-      {/* Dark puddle sheen at bottom */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '20%',
-        background: 'linear-gradient(0deg, rgba(10,18,28,.45), transparent)', pointerEvents: 'none' }} />
+      {/* Dense storm cloud layers */}
+      <div style={{ position: 'absolute', top: -80, left: -60, right: -60, height: 260, pointerEvents: 'none',
+        background: 'radial-gradient(ellipse 80% 60% at 40% 0%, #1c2b38 0%, transparent 70%)',
+        filter: 'blur(18px)', opacity: 0.9 }} />
+      <Cloud top={-55} left={-60} width={320} opacity={0.75} blur={28} color="#162230" />
+      <Cloud top={-20} left={60}  width={280} opacity={0.65} blur={24} color="#1d2e3d" />
+      <Cloud top={40}  left={-30} width={220} opacity={0.45} blur={20} color="#243748" />
+      {/* Canvas rain drops */}
+      <RainCanvas />
+      {/* Fog/mist mid-screen */}
+      <div style={{ position: 'absolute', top: '30%', left: 0, right: 0, height: '35%',
+        background: 'linear-gradient(180deg, transparent, rgba(30,50,68,.22), transparent)',
+        pointerEvents: 'none' }} />
+      {/* Wet ground shimmer at bottom */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '22%',
+        background: 'linear-gradient(0deg, rgba(12,22,35,.65), transparent)', pointerEvents: 'none' }} />
     </>
   )
 }
