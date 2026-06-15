@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Running Telemetry — 5 Prototype Strategies (Wireframes)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Spline+Sans+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#f4f3ee; --panel:#fbfaf6; --ink:#1c1b18; --ink-soft:#6b6760;
+    --line:#1c1b18; --accent:#df551d; --accent-soft:#f7dccc;
+    --blue:#3f5d77; --muted:#cfccc2;
+    --hand:'Architects Daughter', 'Comic Sans MS', cursive;
+    --mono:'Spline Sans Mono', ui-monospace, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{
+    background:
+      repeating-linear-gradient(0deg, transparent 0 31px, rgba(28,27,24,.04) 31px 32px),
+      var(--paper);
+    color:var(--ink); font-family:var(--hand); font-size:16px; line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:var(--mono);}
+  /* ---- sketch primitives ---- */
+  .box{ background:var(--panel); border:2px solid var(--line); border-radius:4px;
+        box-shadow:3px 3px 0 rgba(28,27,24,.18); }
+  .box.tight{box-shadow:2px 2px 0 rgba(28,27,24,.15);}
+  .ph{ /* striped image / map placeholder */
+    background:repeating-linear-gradient(135deg, rgba(28,27,24,.10) 0 7px, transparent 7px 16px);
+    border:1.5px dashed var(--line); border-radius:4px;
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    color:var(--ink-soft); font-family:var(--mono); font-size:11px; letter-spacing:.04em;
+    text-transform:uppercase; padding:8px;
+  }
+  .note{ font-family:var(--hand); color:var(--accent); font-size:13.5px; line-height:1.25; }
+  .badge{ display:inline-flex; align-items:center; gap:5px; border:1.5px solid var(--line);
+    border-radius:20px; padding:2px 10px; font-family:var(--mono); font-size:11px;
+    text-transform:uppercase; letter-spacing:.04em; background:var(--panel); }
+  .badge.warn{ background:var(--accent-soft); border-color:var(--accent); color:#8a330c; }
+  .badge.on{ background:var(--ink); color:var(--paper); }
+  .tag{ font-family:var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--ink-soft); }
+  .num{ font-family:var(--mono); font-weight:700; }
+  /* mini bar */
+  .bar{ height:8px; border:1.5px solid var(--line); border-radius:6px; background:var(--panel); overflow:hidden; }
+  .bar > i{ display:block; height:100%; background:var(--ink); }
+  .bar.acc > i{ background:var(--accent); }
+
+  /* ===== app frame ===== */
+  .app{ min-height:100vh; display:flex; flex-direction:column; }
+  header.top{ padding:18px 26px 12px; border-bottom:2px solid var(--line);
+    background:var(--panel); position:sticky; top:0; z-index:40; }
+  .brandrow{ display:flex; align-items:flex-end; justify-content:space-between; gap:18px; flex-wrap:wrap; }
+  .brand h1{ margin:0; font-size:26px; font-weight:400; letter-spacing:.2px; }
+  .brand p{ margin:2px 0 0; font-family:var(--mono); font-size:11px; color:var(--ink-soft);
+    text-transform:uppercase; letter-spacing:.08em; }
+  .stamp{ font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); text-align:right;
+    border:1.5px dashed var(--line); border-radius:4px; padding:5px 9px; transform:rotate(1.2deg); }
+
+  /* strategy toggle */
+  .toggle-wrap{ margin-top:14px; }
+  .toggle-lbl{ font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--ink-soft); margin-bottom:6px; }
+  .tabs{ display:flex; gap:8px; flex-wrap:wrap; }
+  .tab{ flex:1 1 170px; min-width:150px; text-align:left; cursor:pointer; background:var(--panel);
+    border:2px solid var(--line); border-radius:5px; box-shadow:2px 2px 0 rgba(28,27,24,.15);
+    padding:8px 11px; font-family:var(--hand); color:var(--ink); transition:transform .08s; }
+  .tab:hover{ transform:translate(-1px,-1px); box-shadow:3px 3px 0 rgba(28,27,24,.2); }
+  .tab .tn{ font-family:var(--mono); font-size:11px; font-weight:700; color:var(--ink-soft); }
+  .tab .tt{ font-size:16px; line-height:1.15; }
+  .tab.active{ background:var(--ink); color:var(--paper); box-shadow:3px 3px 0 var(--accent); }
+  .tab.active .tn{ color:var(--accent); }
+
+  /* body layout */
+  .body{ flex:1; display:grid; grid-template-columns:268px 1fr; gap:0; align-items:start; }
+  aside.env{ position:sticky; top:128px; align-self:start; padding:20px 18px; border-right:2px solid var(--line);
+    min-height:calc(100vh - 128px); background:rgba(251,250,246,.6); }
+  main.stage{ padding:24px 28px 60px; min-width:0; }
+
+  /* sidebar controls */
+  .env h2{ margin:0 0 3px; font-size:18px; font-weight:400; }
+  .env .sub{ font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:.07em;
+    color:var(--ink-soft); margin-bottom:16px; }
+  .ctl{ margin-bottom:18px; }
+  .ctl > .lab{ font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.05em;
+    color:var(--ink-soft); margin-bottom:7px; display:flex; align-items:center; gap:6px; }
+  .seg{ display:flex; gap:6px; flex-wrap:wrap; }
+  .seg button{ cursor:pointer; white-space:nowrap; font-family:var(--hand); font-size:15px; padding:6px 11px;
+    border:2px solid var(--line); border-radius:5px; background:var(--panel);
+    box-shadow:2px 2px 0 rgba(28,27,24,.13); transition:transform .07s; }
+  .seg button:hover{ transform:translate(-1px,-1px); }
+  .seg button.sel{ background:var(--accent); color:#fff; border-color:var(--line); box-shadow:2px 2px 0 var(--ink); }
+  .seg.bw button.sel{ background:var(--ink); color:var(--paper); box-shadow:2px 2px 0 var(--accent); }
+
+  .readout{ margin-top:8px; border-top:2px dashed var(--line); padding-top:14px; }
+  .ro-row{ display:flex; justify-content:space-between; align-items:baseline; gap:8px;
+    padding:5px 0; border-bottom:1px dotted var(--muted); }
+  .ro-row .k{ font-family:var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-soft); }
+  .ro-row .v{ font-family:var(--mono); font-weight:700; font-size:14px; }
+  .ro-note{ margin-top:12px; }
+  .dots{ display:flex; gap:3px; }
+  .dots i{ width:9px; height:9px; border:1.5px solid var(--line); border-radius:2px; background:var(--panel); }
+  .dots i.f{ background:var(--accent); }
+
+  /* generic helpers used by prototypes */
+  .grid{ display:grid; gap:14px; }
+  .row{ display:flex; gap:14px; }
+  .between{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .stack{ display:flex; flex-direction:column; gap:6px; }
+  h3.sec{ margin:0 0 12px; font-size:20px; font-weight:400; display:flex; align-items:center; gap:10px; }
+  h3.sec .hash{ font-family:var(--mono); font-size:12px; color:var(--accent); border:1.5px solid var(--accent);
+    border-radius:4px; padding:1px 6px; }
+  .annot{ display:flex; align-items:flex-start; gap:7px; }
+  .annot::before{ content:"↳"; color:var(--accent); font-family:var(--mono); }
+  .big{ font-family:var(--mono); font-weight:700; line-height:.95; white-space:nowrap; }
+  .divider{ border:none; border-top:2px dashed var(--line); margin:18px 0; }
+
+  /* modal (proto 5) */
+  .scrim{ position:fixed; inset:0; background:rgba(28,27,24,.55); display:none; align-items:center;
+    justify-content:center; z-index:60; padding:20px; }
+  .scrim.show{ display:flex; }
+  .modal{ width:min(460px,94vw); background:var(--panel); border:2.5px solid var(--line);
+    border-radius:6px; box-shadow:6px 6px 0 var(--accent); padding:22px; }
+
+  /* ===== phone frame ===== */
+  main.stage{ display:flex; justify-content:center; }
+  .phone-wrap{ display:flex; flex-direction:column; align-items:center; gap:16px; width:392px; max-width:100%; }
+  .phone{ width:392px; height:790px; flex:none; border:3px solid var(--line); border-radius:42px;
+    background:var(--panel); box-shadow:5px 6px 0 rgba(28,27,24,.18); padding:11px; position:relative; }
+  .phone .screen{ width:100%; height:100%; border:1.5px solid var(--line); border-radius:32px;
+    overflow-y:auto; overflow-x:hidden; background:var(--paper); position:relative; }
+  .phone .screen::-webkit-scrollbar{ width:0; }
+  .home-ind{ position:absolute; bottom:5px; left:50%; transform:translateX(-50%);
+    width:118px; height:5px; border-radius:3px; background:var(--ink); opacity:.45; }
+  .statusbar{ position:sticky; top:0; z-index:6; display:flex; justify-content:space-between; align-items:center;
+    gap:8px; padding:8px 16px 7px; background:var(--paper); border-bottom:1.5px dashed var(--muted);
+    font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); }
+  .screen-body{ padding:14px 13px 26px; }
+  .appbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+  .appbar h4{ margin:0; font-size:19px; font-weight:400; white-space:nowrap; }
+  .caption{ width:392px; max-width:100%; }
+
+  @media (max-width:1180px){
+    .phone{ transform:scale(.92); transform-origin:top center; }
+    .phone-wrap{ gap:6px; }
+  }
+
+  @media (max-width:900px){
+    .body{ grid-template-columns:1fr; }
+    aside.env{ position:static; min-height:0; border-right:none; border-bottom:2px solid var(--line); }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <div class="brandrow">
+        <div class="brand">
+          <h1>Adaptive Run + Music — Solution Space</h1>
+          <p>Stage 5 prototype · context-aware route &amp; energy-matched playlist · low-fi wireframes</p>
+        </div>
+        <div class="stamp">WIREFRAME / WIZARD-OF-OZ<br/>not final UI — structure &amp; flow only</div>
+      </div>
+      <div class="toggle-wrap">
+        <div class="toggle-lbl">Select Prototype Strategy (1–5)</div>
+        <div class="tabs" id="tabs"></div>
+      </div>
+    </header>
+
+    <div class="body">
+      <aside class="env" id="env"></aside>
+      <main class="stage" id="stage"></main>
+    </div>
+  </div>
+
+  <div class="scrim" id="scrim"></div>
+
+  <script src="js/engine.js"></script>
+  <script src="js/protos.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
